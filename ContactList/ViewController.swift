@@ -8,13 +8,91 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view.
+    @IBOutlet weak var tableContacts: UITableView!
+    private var favoriteContacts:[Contact]?
+    private var showFavorite: Bool = false
+    
+    private func updateFavoriteArray() {
+        favoriteContacts = Contacts.shared.value.filter({$0.favorite})
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateFavoriteArray()
+        tableContacts.reloadData()
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showFavorite {
+            return favoriteContacts?.count ?? 0
+        } else {
+            return Contacts.shared.value.count
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "contactCell")
+        as! UITableViewCell
+        var contact = Contacts.shared.value[indexPath.row]
+        if showFavorite && (favoriteContacts?.count ?? 0)>0 {
+            contact = favoriteContacts![indexPath.row]
+        }
+        cell.textLabel?.text = contact.firstName + " " + contact.dobleName
+        if contact.favorite {
+            cell.imageView?.image = UIImage(named: "star")
+        } else {
+            cell.imageView?.image = UIImage(named: "star1")
+        }
+        cell.imageView?.tintColor = .red
+        return cell
+    }
+    
+    func contextualDeleteAction(forRowAtIndexPath indexPath: IndexPath) -> UIContextualAction {
+
+        let action = UIContextualAction(style: .destructive, title: "delete") { (contextAction: UIContextualAction, sourceView: UIView, completionHandler: (Bool) -> Void) in
+            var uuid: String = ""
+            if self.showFavorite {
+                uuid = self.favoriteContacts![indexPath.row].uuid
+            } else {
+                uuid = Contacts.shared.value[indexPath.row].uuid
+            }
+            
+            if let index = Contacts.shared.value.firstIndex(where: {$0.uuid == uuid}){
+                Contacts.shared.value.remove(at: index)
+                self.updateFavoriteArray()
+                self.tableContacts.deleteRows(at: [indexPath], with: .automatic)
+            }
+            
+            completionHandler(true)
+        }
+        return action
+        
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = self.contextualDeleteAction(forRowAtIndexPath: indexPath)
+        let swipeConfig = UISwipeActionsConfiguration(actions: [deleteAction])
+        return swipeConfig
     }
 
-
+    @IBAction func FavoriteList(_ sender: UISegmentedControl) {
+        
+        self.showFavorite = sender.selectedSegmentIndex == 1
+        self.tableContacts.reloadData()
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        var selectedContacs = Contacts.shared.value[indexPath.row]
+        if showFavorite {
+            selectedContacs = favoriteContacts![indexPath.row]
+        }
+        if let rename = storyboard?.instantiateViewController(identifier: "NewContact") as? NewContactViewController {
+            rename.selectedContact = selectedContacs
+            navigationController?.pushViewController(rename, animated: true)
+        }
+    
+    }
+    
 }
 
