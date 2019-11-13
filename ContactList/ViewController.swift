@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ViewController: UIViewController {
 
     @IBOutlet weak var tableContacts: UITableView!
     private var favoriteContacts:[Contact]?
@@ -23,30 +23,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         updateFavoriteArray()
         tableContacts.reloadData()
     }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if showFavorite {
-            return favoriteContacts?.count ?? 0
-        } else {
-            return Contacts.shared.value.count
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "contactCell")
-        as! UITableViewCell
-        var contact = Contacts.shared.value[indexPath.row]
-        if showFavorite && (favoriteContacts?.count ?? 0)>0 {
-            contact = favoriteContacts![indexPath.row]
-        }
-        cell.textLabel?.text = contact.firstName + " " + contact.dobleName
-        if contact.favorite {
-            cell.imageView?.image = UIImage(named: "star")
-        } else {
-            cell.imageView?.image = UIImage(named: "star1")
-        }
-        cell.imageView?.tintColor = .red
-        return cell
+
+    // Нельзя называть функции с большой буквы (нарушает CamleCase)
+    @IBAction func FavoriteList(_ sender: UISegmentedControl) {
+        
+        self.showFavorite = sender.selectedSegmentIndex == 1
+        self.tableContacts.reloadData()
     }
     
     func contextualDeleteAction(forRowAtIndexPath indexPath: IndexPath) -> UIContextualAction {
@@ -71,17 +53,37 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
     }
     
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let deleteAction = self.contextualDeleteAction(forRowAtIndexPath: indexPath)
-        let swipeConfig = UISwipeActionsConfiguration(actions: [deleteAction])
-        return swipeConfig
-    }
+}
 
-    @IBAction func FavoriteList(_ sender: UISegmentedControl) {
-        
-        self.showFavorite = sender.selectedSegmentIndex == 1
-        self.tableContacts.reloadData()
+
+// Все методы делегата таблицы вынес
+// в отдельный extension, так более читаемо и логично
+extension ViewController: UITableViewDataSource, UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if showFavorite {
+            return favoriteContacts?.count ?? 0
+        } else {
+            return Contacts.shared.value.count
+        }
     }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "contactCell")!
+        var contact = Contacts.shared.value[indexPath.row]
+        if showFavorite && (favoriteContacts?.count ?? 0)>0 {
+            contact = favoriteContacts![indexPath.row]
+        }
+        cell.textLabel?.text = contact.firstName + " " + contact.dobleName
+        if contact.favorite {
+            cell.imageView?.image = UIImage(named: "star")
+        } else {
+            cell.imageView?.image = UIImage(named: "star1")
+        }
+        cell.imageView?.tintColor = .red
+        return cell
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         var selectedContacs = Contacts.shared.value[indexPath.row]
         if showFavorite {
@@ -92,6 +94,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             navigationController?.pushViewController(rename, animated: true)
         }
     
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = self.contextualDeleteAction(forRowAtIndexPath: indexPath)
+        let swipeConfig = UISwipeActionsConfiguration(actions: [deleteAction])
+        return swipeConfig
     }
     
 }
