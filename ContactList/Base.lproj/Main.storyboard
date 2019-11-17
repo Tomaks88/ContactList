@@ -18,6 +18,10 @@
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="1la-Pm-9Jc">
                                 <rect key="frame" x="0.0" y="88" width="414" height="774"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <activityIndicatorView key="tableFooterView" hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="medium" id="Iby-FK-KNb">
+                                    <rect key="frame" x="0.0" y="106" width="414" height="44"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                </activityIndicatorView>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="contactCell" rowHeight="50" id="8YJ-nd-wZ4">
                                         <rect key="frame" x="0.0" y="28" width="414" height="50"/>
@@ -52,7 +56,7 @@
                                 <segment title="Favorite"/>
                             </segments>
                             <connections>
-                                <action selector="FavoriteList:" destination="BYZ-38-t0r" eventType="valueChanged" id="lov-hQ-OrN"/>
+                                <action selector="favoriteList:" destination="BYZ-38-t0r" eventType="valueChanged" id="lov-hQ-OrN"/>
                             </connections>
                         </segmentedControl>
                         <barButtonItem key="rightBarButtonItem" style="plain" systemItem="add" id="r0d-P5-iqy">
@@ -62,6 +66,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="loadContactList" destination="Iby-FK-KNb" id="2wI-T7-ByR"/>
                         <outlet property="tableContacts" destination="1la-Pm-9Jc" id="Ygt-9E-Rt8"/>
                     </connections>
                 </viewController>
@@ -88,7 +93,7 @@
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Favorite" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hHa-3c-64e">
-                                <rect key="frame" x="20" y="395" width="76" height="27"/>
+                                <rect key="frame" x="20" y="395" width="75.5" height="27"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="22"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -127,6 +132,13 @@
                                 <rect key="frame" x="232" y="309" width="20" height="22"/>
                                 <state key="normal" image="phone.fill" catalog="system"/>
                             </button>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="MVd-UN-xBh">
+                                <rect key="frame" x="179.5" y="473.5" width="55" height="55"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="55" id="M29-XW-vlh"/>
+                                    <constraint firstAttribute="height" constant="55" id="eet-PO-dzr"/>
+                                </constraints>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -136,10 +148,12 @@
                             <constraint firstItem="0vN-g9-SNA" firstAttribute="trailing" secondItem="Li5-gG-zim" secondAttribute="trailing" constant="244" id="2tP-vm-hux"/>
                             <constraint firstItem="Li5-gG-zim" firstAttribute="leading" secondItem="0vN-g9-SNA" secondAttribute="leading" constant="20" id="4DV-5H-V9k"/>
                             <constraint firstItem="0vN-g9-SNA" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="BF4-u2-Gju" secondAttribute="trailing" constant="345" id="5ZF-GZ-PGz"/>
+                            <constraint firstItem="MVd-UN-xBh" firstAttribute="centerY" secondItem="0vN-g9-SNA" secondAttribute="centerY" id="8qH-Wh-6XZ"/>
                             <constraint firstItem="BF4-u2-Gju" firstAttribute="leading" secondItem="0vN-g9-SNA" secondAttribute="leading" constant="20" id="97a-hZ-xoT"/>
                             <constraint firstItem="BF4-u2-Gju" firstAttribute="top" secondItem="Li5-gG-zim" secondAttribute="bottom" constant="8" id="H7u-jc-DlO"/>
                             <constraint firstItem="0vN-g9-SNA" firstAttribute="trailing" secondItem="n5z-ci-gIa" secondAttribute="trailing" constant="192" id="JiR-4R-nhu"/>
                             <constraint firstItem="n5z-ci-gIa" firstAttribute="leading" relation="lessThanOrEqual" secondItem="hHa-3c-64e" secondAttribute="trailing" constant="133" id="KIl-2E-JLv"/>
+                            <constraint firstItem="MVd-UN-xBh" firstAttribute="centerX" secondItem="0vN-g9-SNA" secondAttribute="centerX" id="NDj-XI-orM"/>
                             <constraint firstItem="0vN-g9-SNA" firstAttribute="trailing" secondItem="YxY-jS-BU6" secondAttribute="trailing" constant="244" id="Ury-NF-X1C"/>
                             <constraint firstItem="0vN-g9-SNA" firstAttribute="trailing" secondItem="vXD-7z-oo2" secondAttribute="trailing" constant="162" id="Wic-8p-aG0"/>
                             <constraint firstItem="0vN-g9-SNA" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="inM-Ph-Y5u" secondAttribute="trailing" constant="282" id="Yiu-Zv-G3w"/>
@@ -165,6 +179,7 @@
                         <outlet property="doubleNameText" destination="Li5-gG-zim" id="XL9-B1-WdR"/>
                         <outlet property="favoriteCount" destination="n5z-ci-gIa" id="D1t-w1-eR2"/>
                         <outlet property="firstNameText" destination="YxY-jS-BU6" id="hZ2-mc-JQM"/>
+                        <outlet property="indicatorSave" destination="MVd-UN-xBh" id="DRg-Rh-Hum"/>
                         <outlet property="phoneText" destination="IVD-2e-mVh" id="DQe-BO-mDE"/>
                     </connections>
                 </viewController>

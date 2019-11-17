@@ -8,10 +8,10 @@
 
 import Foundation
 
-// Добавил немного отступов
+
 struct Contact: Codable {
     
-    let uuid: String = UUID().uuidString
+    private(set) var uuid: String = UUID().uuidString
     var firstName: String
     var dobleName: String
     var phone: Int

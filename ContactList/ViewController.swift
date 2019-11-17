@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var tableContacts: UITableView!
+    @IBOutlet weak var loadContactList: UIActivityIndicatorView!
     private var favoriteContacts:[Contact]?
     private var showFavorite: Bool = false
     
@@ -18,14 +19,31 @@ class ViewController: UIViewController {
         favoriteContacts = Contacts.shared.value.filter({$0.favorite})
     }
     
+    override func viewDidLoad() {
+        loadContactList.startAnimating()
+        API.loadContacts{contactsArr, err in
+            if let contacts = contactsArr {
+                Contacts.shared.value.removeAll()
+                Contacts.shared.value = contacts
+                DispatchQueue.main.async {
+                    self.reloadTable()
+                    self.loadContactList.stopAnimating()
+                }
+            }
+        }
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.reloadTable()
+    }
+    
+    func reloadTable() {
         updateFavoriteArray()
         tableContacts.reloadData()
     }
 
-    // Нельзя называть функции с большой буквы (нарушает CamleCase)
-    @IBAction func FavoriteList(_ sender: UISegmentedControl) {
+    @IBAction func favoriteList(_ sender: UISegmentedControl) {
         
         self.showFavorite = sender.selectedSegmentIndex == 1
         self.tableContacts.reloadData()
@@ -40,24 +58,22 @@ class ViewController: UIViewController {
             } else {
                 uuid = Contacts.shared.value[indexPath.row].uuid
             }
-            
-            if let index = Contacts.shared.value.firstIndex(where: {$0.uuid == uuid}){
-                Contacts.shared.value.remove(at: index)
-                self.updateFavoriteArray()
-                self.tableContacts.deleteRows(at: [indexPath], with: .automatic)
+            API.deleteContact(contactID: uuid) { result in
+            guard result else {return}
+                if let index = Contacts.shared.value.firstIndex(where: {$0.uuid == uuid}){
+                    Contacts.shared.value.remove(at: index)
+                    self.updateFavoriteArray()
+                    DispatchQueue.main.async {
+                        self.tableContacts.deleteRows(at: [indexPath], with: .automatic)
+                    }
+                }
             }
-            
             completionHandler(true)
         }
         return action
-        
     }
-    
 }
 
-
-// Все методы делегата таблицы вынес
-// в отдельный extension, так более читаемо и логично
 extension ViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -65,8 +81,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
             return favoriteContacts?.count ?? 0
         } else {
             return Contacts.shared.value.count
-        }
     }
+}
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "contactCell")!
